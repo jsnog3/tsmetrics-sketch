@@ -2,14 +2,16 @@
 -- https://docs.tigerdata.com/use-timescale/latest/continuous-aggregates/about-continuous-aggregates/
 CREATE MATERIALIZED VIEW abtest_metrics_5m
 WITH (timescaledb.continuous) AS
-SELECT 
+SELECT
     test_name,
-    time_bucket(INTERVAL '5 min', time) AS bucket_5m,
-    AVG(metric_value),
-    MIN(metric_value),
-    MAX(metric_value)
+    metric_name,
+    unit,
+    time_bucket(INTERVAL '5 minutes', time) AS bucket_start,
+    AVG(metric_value) AS avg_value,
+    MIN(metric_value) AS min_value,
+    MAX(metric_value) AS max_value
 FROM abtest_metrics
-GROUP BY test_name, bucket_5m;
+GROUP BY test_name, metric_name, unit, time_bucket(INTERVAL '5 minutes', time);
 
 SELECT add_continuous_aggregate_policy(
     'abtest_metrics_5m',
@@ -24,12 +26,18 @@ CREATE MATERIALIZED VIEW abtest_metrics_30m
 WITH (timescaledb.continuous) AS
 SELECT
     test_name,
-    time_bucket(INTERVAL '30 min', bucket_5m) AS bucket_30m,
-    AVG(avg),
-    MIN(min),
-    MAX(max)
+    metric_name,
+    unit,
+    time_bucket(INTERVAL '30 minutes', bucket_start) AS bucket_start,
+    AVG(avg_value) AS avg_value,
+    MIN(min_value) AS min_value,
+    MAX(max_value) AS max_value
 FROM abtest_metrics_5m
-GROUP BY test_name, bucket_30m;
+GROUP BY
+    test_name,
+    metric_name,
+    unit,
+    time_bucket(INTERVAL '30 minutes', bucket_start);
 
 SELECT add_continuous_aggregate_policy(
     'abtest_metrics_30m',
@@ -42,12 +50,18 @@ CREATE MATERIALIZED VIEW abtest_metrics_6h
 WITH (timescaledb.continuous) AS
 SELECT
     test_name,
-    time_bucket(INTERVAL '6 hours', bucket_30m) AS bucket_6h,
-    AVG(avg),
-    MIN(min),
-    MAX(max)
+    metric_name,
+    unit,
+    time_bucket(INTERVAL '6 hours', bucket_start) AS bucket_start,
+    AVG(avg_value) AS avg_value,
+    MIN(min_value) AS min_value,
+    MAX(max_value) AS max_value
 FROM abtest_metrics_30m
-GROUP BY test_name, bucket_6h;
+GROUP BY
+    test_name,
+    metric_name,
+    unit,
+    time_bucket(INTERVAL '6 hours', bucket_start);
 
 SELECT add_continuous_aggregate_policy(
     'abtest_metrics_6h',
