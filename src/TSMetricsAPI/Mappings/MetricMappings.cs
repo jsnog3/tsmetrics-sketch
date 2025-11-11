@@ -1,4 +1,5 @@
-﻿using Core.Metrics;
+﻿using System;
+using Core.Metrics;
 using TSMetricsAPI.Contracts;
 using TSMetricsAPI.Contracts.Metrics;
 
@@ -30,7 +31,11 @@ public static class MetricMappings
     }
 
     private static MetricDatapoint ToDatapoint(Metric metric) =>
-        new(metric.Time, metric.Average, metric.Minimum, metric.Maximum);
+        new(
+            metric.Time.ToUnixTimeSeconds(),
+            Math.Round(metric.Average, 3),
+            Math.Round(metric.Minimum, 3),
+            Math.Round(metric.Maximum, 3));
 
     private static AggregationGranularity ParseGranularity(string? granularity)
     {

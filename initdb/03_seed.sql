@@ -24,20 +24,21 @@ FROM (
                   FROM times
               ),
               metrics AS (
-                  SELECT
-                      'response_time' AS metric_name, random() * 120 + 30 AS metric_value, 'ms' AS unit
+                  SELECT 'response_time' AS metric_name, 'ms' AS unit
                   UNION ALL
-                  SELECT
-                      'cpu_usage', random() * 100, '%'
+                  SELECT 'cpu_usage', '%'
                   UNION ALL
-                  SELECT
-                      'ram_usage', random() * 16000 + 1000, 'MB'
+                  SELECT 'ram_usage', 'MB'
               )
          SELECT
              n.time_point,
              n.rn,
              m.metric_name,
-             m.metric_value,
+             CASE
+                 WHEN m.metric_name = 'response_time' THEN random() * 120 + 30
+                 WHEN m.metric_name = 'cpu_usage' THEN random() * 100
+                 WHEN m.metric_name = 'ram_usage' THEN random() * 16000 + 1000
+                 END AS metric_value,
              m.unit
          FROM numbered n
                   CROSS JOIN metrics m
