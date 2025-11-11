@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using TSMetricsAPI.Contracts;
 using TSMetricsAPI.Contracts.Metrics;
 
@@ -26,6 +26,13 @@ public class MetricsRequestValidator : AbstractValidator<MetricRequest>
         RuleFor(request => request.End)
             .GreaterThan(request => request.Start!.Value)
             .When(request => request.Start.HasValue && request.End.HasValue);
+
+        RuleFor(request => request.Limit)
+            .GreaterThan(0)
+            .LessThanOrEqualTo(10000);
+
+        RuleFor(request => request.Skip)
+            .GreaterThanOrEqualTo(0);
     }
 
     private static bool IsSupportedGranularity(string? granularity) =>

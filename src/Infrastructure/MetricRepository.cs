@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using System.Data.Common;
 using Core.Metrics;
 using Dapper;
@@ -14,7 +14,7 @@ public class MetricRepository : IMetricRepository
         _connection = connection;
     }
 
-    public async Task<IEnumerable<Metric>> GetMetricAggregation(Aggregation aggregation, CancellationToken cancellationToken = default)
+    public async Task<MetricAggregation> GetMetricAggregation(Aggregation aggregation, CancellationToken cancellationToken = default)
     {
         var viewName = ResolveViewName(aggregation.Granularity);
 
@@ -29,7 +29,8 @@ public class MetricRepository : IMetricRepository
                       AND metric_name = @MetricName
                       AND bucket_start >= @Start
                       AND bucket_start <= @End
-                    ORDER BY bucket_start;
+                    ORDER BY bucket_start
+                    LIMIT @LimitPlusOne OFFSET @Skip;
                     """;
         
         if (_connection is DbConnection db && db.State != ConnectionState.Open)
@@ -42,12 +43,20 @@ public class MetricRepository : IMetricRepository
             AbTestName = aggregation.AbTestName,
             MetricName = aggregation.MetricName,
             Start = aggregation.Start,
-            End = aggregation.End
+            End = aggregation.End,
+            LimitPlusOne = aggregation.Limit + 1,
+            Skip = aggregation.Skip,
         };
 
         var command = new CommandDefinition(sql, parameters, cancellationToken: cancellationToken);
-        var rows = await _connection.QueryAsync<Metric>(command);
-        return rows.AsList();
+        var rows = (await _connection.QueryAsync<Metric>(command)).ToList();
+        
+        var hasMore = rows.Count > aggregation.Limit;
+        if (hasMore)
+        {
+            rows.RemoveAt(rows.Count - 1);
+        }        
+        return new MetricAggregation(!hasMore, rows.Count, rows);
     }
 
     private static string ResolveViewName(AggregationGranularity granularity) => granularity switch

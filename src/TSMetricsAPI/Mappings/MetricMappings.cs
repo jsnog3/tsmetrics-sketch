@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Core.Metrics;
 using TSMetricsAPI.Contracts;
 using TSMetricsAPI.Contracts.Metrics;
@@ -7,16 +7,19 @@ namespace TSMetricsAPI.Mappings;
 
 public static class MetricMappings
 {
-    public static MetricResponse ToContract(this IEnumerable<Metric> result, Aggregation aggregation)
+    public static MetricResponse ToContract(this MetricAggregation result, Aggregation aggregation)
     {
-        var metrics = result.ToList();
-        var unit = metrics.FirstOrDefault()?.Unit ?? string.Empty;        
-        var datapoint = metrics.Select(ToDatapoint).ToList();
+        var unit = result.Metrics.FirstOrDefault()?.Unit ?? string.Empty;
+        var datapoint = result.Metrics.Select(ToDatapoint).ToList();
 
         return new MetricResponse(
             aggregation.AbTestName,
             aggregation.MetricName,
             unit,
+            aggregation.Skip,
+            aggregation.Limit,
+            result.ReturnedCount,
+            result.IsComplete,
             datapoint);
     }
 
@@ -27,7 +30,9 @@ public static class MetricMappings
             request.MetricName,
             request.Start ?? DateTimeOffset.UtcNow.AddDays(-3),
             request.End ?? DateTimeOffset.UtcNow,
-            ParseGranularity(request.Granularity));
+            ParseGranularity(request.Granularity),
+            request.Skip,
+            request.Limit);
     }
 
     private static MetricDatapoint ToDatapoint(Metric metric) =>
