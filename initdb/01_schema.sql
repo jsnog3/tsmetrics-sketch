@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS abtest_metrics (
     time TIMESTAMPTZ NOT NULL,
     test_name VARCHAR(50) NOT NULL,
     metric_name VARCHAR(50) NOT NULL,
-    metric_value DOUBLE PRECISION NULL,
+    metric_value DOUBLE PRECISION NOT NULL,
     unit VARCHAR(20) NOT NULL
 ) WITH (
     tsdb.hypertable,
