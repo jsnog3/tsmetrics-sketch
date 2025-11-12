@@ -2,18 +2,28 @@
 
 #### Overview
 
-This is a sketch project that uses TimescaleDB to show timeseries data in a .NET 9 minimal API.
-
-The idea of this project is that we have some timeseries data with metrics of our main service (e.g.: cpu_usage, response_times, add-to-cart-clicks). 
-Then we expose this in an internal REST API that we can use in internal dashboards applications.
+The goal of this project is to use time series data containing key metrics (e.g., CPU usage, response times, add-to-cart clicks) from our main service (such as an e-commerce website) to enable simple A/B testing during feature rollouts.
 
 ![Architecture Diagram](docs/architecture.png)
 
-1. Public web service, for example an ecommerce website, where we are implementing A/B tests in new released features.
-2. The public web service, produces messages with some metrics to an internal message queue
-3. We have some consumer service responsible to read this messages and store them in our database
-4. A REST API that has endpoints to show this metrics and reads them from the database
-5. An internal dashboard to see this information, like for example a streamlit application in python
+1. A public web service (e.g., an e-commerce platform) where we implement A/B testing.
+2. The web service publishes messages containing various metrics to a message queue.
+3. A consumer service reads these messages and stores the data in a database.
+4. A REST API provides endpoints to retrieve and display these metrics from the database.
+5. An internal dashboard (e.g., a Streamlit application in Python) visualizes this information for analysis.
+
+The current implementation is focused on point 4.
+
+#### Features
+
+The focus was to create an API that provides a good performance. To achieve this, some decisions were made:
+
+
+- A dedicated database was used to handle time-series data. TimescaleDB offers scalability, usability, and reliability as an extension of PostgreSQL. It also provides specialized features that simplify the process, such as automatic partitioning (chunking) and continuous aggregations.
+- Trim unnecessary data from the payload to make responses smaller.
+- Implement rate limiting and set limits on the amount of data retrievable from the API.
+- Indicate whether more data is available for a given query without revealing the exact count.
+- Restrict the raw TimescaleDB hypertable to write operations only.
 
 #### Local Testing
 
