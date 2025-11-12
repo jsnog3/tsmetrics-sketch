@@ -5,11 +5,11 @@ namespace TSMetricsAPI.Contracts.Metrics;
 [SwaggerSchema("Aggregated metric response")]
 public record MetricResponse
 {
-    [SwaggerSchema("A/B test identifies")]
-    public string AbTestName { get; init; }
+    [SwaggerSchema("A/B test identifier")]
+    public string AbTest { get; init; }
 
     [SwaggerSchema("Metric identifier")]
-    public string MetricName { get; init; }
+    public string Metric { get; init; }
 
     [SwaggerSchema("Metric unit for the datapoints")]
     public string Unit { get; init; }
@@ -30,8 +30,8 @@ public record MetricResponse
     public IReadOnlyList<MetricDatapoint> Datapoints { get; init; }
 
     public MetricResponse(
-        string abTestName,
-        string metricName,
+        string abTest,
+        string metric,
         string unit,
         int skip,
         int limit,
@@ -39,8 +39,8 @@ public record MetricResponse
         bool isComplete,
         IReadOnlyList<MetricDatapoint> datapoints)
     {
-        AbTestName = abTestName;
-        MetricName = metricName;
+        AbTest = abTest;
+        Metric = metric;
         Unit = unit;
         Skip = skip;
         Limit = limit;
