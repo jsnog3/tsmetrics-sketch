@@ -56,3 +56,5 @@ app.RegisterMetricsEndpoint();
 app.RegisterAbTestEndpoints();
 
 app.Run();
+
+public partial class Program { } // For integration tests
