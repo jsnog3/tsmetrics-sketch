@@ -1,4 +1,4 @@
-﻿using Core.Metrics;
+using Core.Metrics;
 using FluentValidation;
 using TSMetricsAPI.Contracts;
 using TSMetricsAPI.Contracts.Metrics;
@@ -11,6 +11,7 @@ public static class MetricEndpoints
     public static void RegisterMetricsEndpoint(this WebApplication app)
     {
         app.MapGet("/metrics", GetAggregationMetrics)
+            .RequireRateLimiting("global")
             .Produces<MetricResponse>(StatusCodes.Status200OK)
             .ProducesValidationProblem();
     }
