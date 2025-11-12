@@ -11,3 +11,17 @@ services:
     volumes:
       - ./initdb:/docker-entrypoint-initdb.d
     restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: src/TSMetricsAPI/Dockerfile
+    ports:
+      - "5221:5221"
+    environment:
+      ASPNETCORE_URLS: "http://+:5221"
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__TimescaleDb: "Host=timescaledb;Port=5432;Database=timeseriesdb;Username=postgres;Password=postgres"
+    depends_on:
+      - timescaledb
+    restart: unless-stopped

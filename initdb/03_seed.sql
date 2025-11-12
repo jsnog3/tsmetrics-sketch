@@ -44,3 +44,24 @@ FROM (
                   CROSS JOIN metrics m
      ) AS seed_data
 WHERE NOT EXISTS (SELECT 1 FROM abtest_metrics);
+
+-- Immediately refresh continuous aggregates so that after seeding the
+-- materialized views are populated and queryable without waiting for the
+-- scheduled policies to run.
+CALL refresh_continuous_aggregate(
+    'abtest_metrics_5m',
+    start => NOW() - INTERVAL '30 days',
+    finish => NOW()
+);
+
+CALL refresh_continuous_aggregate(
+    'abtest_metrics_30m',
+    start => NOW() - INTERVAL '30 days',
+    finish => NOW()
+);
+
+CALL refresh_continuous_aggregate(
+    'abtest_metrics_6h',
+    start => NOW() - INTERVAL '30 days',
+    finish => NOW()
+);
