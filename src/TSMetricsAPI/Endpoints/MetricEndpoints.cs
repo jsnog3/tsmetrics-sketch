@@ -1,6 +1,6 @@
 using Core.Metrics;
 using FluentValidation;
-using TSMetricsAPI.Contracts;
+using Microsoft.OpenApi.Models;
 using TSMetricsAPI.Contracts.Metrics;
 using TSMetricsAPI.Mappings;
 
@@ -12,8 +12,25 @@ public static class MetricEndpoints
     {
         app.MapGet("/metrics", GetAggregationMetrics)
             .RequireRateLimiting("global")
+            .WithName("GetMetrics")
+            .WithTags("Metrics")
+            .WithOpenApi(operation => new OpenApiOperation(operation)
+            {
+                Summary = "Retrieve aggregated A/B test metrics",
+                Description = "Returns paginated metric buckets across the supported granularities"
+            })
             .Produces<MetricResponse>(StatusCodes.Status200OK)
-            .ProducesValidationProblem();
+            .ProducesValidationProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        app.MapGet("/metrics/capabilities", () => new[] { "response_time", "cpu_usage", "ram_usage" })
+            .WithName("GetSupportedMetrics")
+            .WithTags("Metrics")
+            .WithOpenApi(operation => new OpenApiOperation(operation)
+            {
+                Summary = "Retrieve supported metrics"
+            });
     }
 
     public static async Task<IResult> GetAggregationMetrics(

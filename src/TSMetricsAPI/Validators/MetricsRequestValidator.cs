@@ -8,12 +8,12 @@ public class MetricsRequestValidator : AbstractValidator<MetricRequest>
 {
     public MetricsRequestValidator()
     {
-        RuleFor(request => request.AbTestName)
+        RuleFor(request => request.AbTest)
             .NotNull()
             .NotEmpty()
             .MaximumLength(50);
 
-        RuleFor(request => request.MetricName)
+        RuleFor(request => request.Metric)
             .NotNull()
             .NotEmpty()
             .MaximumLength(50);

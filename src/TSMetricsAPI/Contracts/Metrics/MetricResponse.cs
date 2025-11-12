@@ -1,11 +1,51 @@
+using Swashbuckle.AspNetCore.Annotations;
+
 namespace TSMetricsAPI.Contracts.Metrics;
 
-public record MetricResponse(
-    string AbTestName,
-    string MetricName,
-    string Unit,
-    int Skip,
-    int Limit,
-    int Count,
-    bool IsComplete,
-    IReadOnlyList<MetricDatapoint> Buckets);
+[SwaggerSchema("Aggregated metric response")]
+public record MetricResponse
+{
+    [SwaggerSchema("A/B test identifies")]
+    public string AbTestName { get; init; }
+
+    [SwaggerSchema("Metric identifier")]
+    public string MetricName { get; init; }
+
+    [SwaggerSchema("Metric unit for the datapoints")]
+    public string Unit { get; init; }
+
+    [SwaggerSchema("Number of results skipped")]
+    public int Skip { get; init; }
+
+    [SwaggerSchema("Number of datapoints requested")]
+    public int Limit { get; init; }
+
+    [SwaggerSchema("Number of datapoints returned")]
+    public int Count { get; init; }
+
+    [SwaggerSchema("Indicates if the datapoints are completed in this response")]
+    public bool IsComplete { get; init; }
+
+    [SwaggerSchema("Chronologically ordered datapoints")]
+    public IReadOnlyList<MetricDatapoint> Datapoints { get; init; }
+
+    public MetricResponse(
+        string abTestName,
+        string metricName,
+        string unit,
+        int skip,
+        int limit,
+        int count,
+        bool isComplete,
+        IReadOnlyList<MetricDatapoint> datapoints)
+    {
+        AbTestName = abTestName;
+        MetricName = metricName;
+        Unit = unit;
+        Skip = skip;
+        Limit = limit;
+        Count = count;
+        IsComplete = isComplete;
+        Datapoints = datapoints;
+    }
+}

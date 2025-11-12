@@ -1,11 +1,9 @@
-using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TSMetricsAPI.Middleware;
 
 public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-
     public async Task InvokeAsync(HttpContext context)
     {
         try
@@ -15,11 +13,17 @@ public sealed class GlobalExceptionMiddleware(RequestDelegate next, ILogger<Glob
         catch (Exception ex)
         {
             logger.LogError(ex, "Unhandled exception for {Path}", context.Request.Path);
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";
-            var errorResponse = JsonSerializer.Serialize(new { error = "An unexpected error occurred." }, JsonOptions);
-            await context.Response.WriteAsync(errorResponse);
-        }
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+            var problem = new ProblemDetails
+            {
+                Status = 500,
+                Title = "Internal Server Error",
+                Detail = ex.Message
+            };
+
+            await context.Response.WriteAsJsonAsync(problem);        }
     }
 }
 

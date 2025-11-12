@@ -2,12 +2,16 @@ using Infrastructure;
 using TSMetricsAPI.Endpoints;
 using TSMetricsAPI.Middleware;
 using TSMetricsAPI.Extensions;
-using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.EnableAnnotations();
+});
 
 builder.Services.AddValidators();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -25,16 +29,14 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         context.HttpContext.Response.ContentType = "application/json";
-
-        var payload = new
+        var problem = new ProblemDetails
         {
-            status = StatusCodes.Status429TooManyRequests,
-            error = "rate_limit_exceeded",
-            message = "Too many requests. Please retry later."
+            Title = "Too Many Requests",
+            Status = StatusCodes.Status429TooManyRequests,
+            Detail = "Too many requests. Please retry later."
         };
-
-        await context.HttpContext.Response.WriteAsJsonAsync(payload, cancellationToken: token);
-    };
+        await context.HttpContext.Response.WriteAsJsonAsync(problem, cancellationToken: token);
+    }; 
 });
 
 var app = builder.Build();
@@ -42,6 +44,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -49,5 +53,6 @@ app.UseRateLimiter();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.RegisterMetricsEndpoint();
+app.RegisterAbTestEndpoints();
 
 app.Run();

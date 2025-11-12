@@ -26,8 +26,8 @@ public static class MetricMappings
     public static Aggregation ToModel(this MetricRequest request)
     {
         return new Aggregation(
-            request.AbTestName,
-            request.MetricName,
+            request.AbTest,
+            request.Metric,
             request.Start ?? DateTimeOffset.UtcNow.AddDays(-3),
             request.End ?? DateTimeOffset.UtcNow,
             ParseGranularity(request.Granularity),
